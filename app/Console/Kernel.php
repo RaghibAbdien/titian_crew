@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Models\Crew;
+use App\Models\Dokumen;
 use App\Events\CrewExpiredEvent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Scheduling\Schedule;
@@ -19,21 +19,22 @@ class Kernel extends ConsoleKernel
         Log::info('Scheduler is running');
 
         try {
-            $expiredKontrak = Crew::where('warn_kontrak', '<=', now())
+            $expiredKontrak = Dokumen::where('warn_kontrak', '<=', now())
                                     ->where('is_notif_kontrak', false)
                                     ->get();
-            $expiredMCU = Crew::where('warn_mcu', '<=', now())
+            $expiredMCU = Dokumen::where('warn_mcu', '<=', now())
                                     ->where('is_notif_mcu', false)
                                     ->get();
             if($expiredKontrak){
-                foreach ($expiredKontrak as $crew) {
-                    Log::info('Kontrak akan expired untuk : ' . $crew->nama_crew);
-                    event(new CrewExpiredEvent($crew, 'kontrak'));
+                foreach ($expiredKontrak as $dokumen) {
+                    Log::info('Kontrak akan expired untuk : ' . $dokumen->id_crew);
+                    event(new CrewExpiredEvent($dokumen, 'kontrak'));
                 }
-            } elseif ($expiredMCU) {
-                foreach ($expiredMCU as $crew) {
-                    Log::info('MCU akan expired untuk: ' . $crew->nama_crew);
-                    event(new CrewExpiredEvent($crew, 'mcu'));
+            }
+            if ($expiredMCU) {
+                foreach ($expiredMCU as $dokumen) {
+                    Log::info('MCU akan expired untuk: ' . $dokumen->id_crew);
+                    event(new CrewExpiredEvent($dokumen, 'mcu'));
                 }
             }
         } catch (\Exception $e) {

@@ -24,7 +24,7 @@ class CrewExpiredListener
      */
     public function handle(CrewExpiredEvent $event)
     {
-        Log::info('Handling CrewExpired event for crew: ' . $event->crew->id_crew);
+        Log::info('Handling CrewExpired event for crew: ' . $event->dokumen->id_crew);
 
         try {
 
@@ -32,24 +32,24 @@ class CrewExpiredListener
                 $jenis = 'kontrak';
                 $title = 'Peringatan Kontrak Expired';
                 $message = 'Kontrak Crew akan segera berakhir';
-                $event->crew->update(['is_notif_kontrak' => true]);
-                Log::info('Updated is_notif_kontrak to true for crew: ' . $event->crew->id_crew);
+                $event->dokumen->update(['is_notif_kontrak' => true]);
+                Log::info('Updated is_notif_kontrak to true for crew: ' . $event->dokumen->id_crew);
             } elseif($event->warningType === 'mcu'){
                 $jenis = 'mcu';
                 $title = 'Peringatan MCU Expired';
                 $message = 'MCU Crew akan segera berakhir';
-                $event->crew->update(['is_notif_mcu' => true]);
-                Log::info('Updated is_notif_mcu to true for crew: ' . $event->crew->id_crew);
+                $event->dokumen->update(['is_notif_mcu' => true]);
+                Log::info('Updated is_notif_mcu to true for crew: ' . $event->dokumen->id_crew);
 
             }
 
             Notification::create([
-                'id_crew' => $event->crew->id_crew,
+                'id_crew' => $event->dokumen->id_crew,
                 'jenis_notif' => $jenis,
                 'title' => $title,
                 'message' => $message,
             ]);
-            Log::info('Notification created successfully for crew: ' . $event->crew->id_crew);
+            Log::info('Notification created successfully for crew: ' . $event->dokumen->id_crew);
         } catch (\Exception $e) {
             Log::error('Error creating notification: ' . $e->getMessage());
         }

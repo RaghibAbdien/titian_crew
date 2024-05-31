@@ -27,8 +27,9 @@ class CrewController extends Controller
         $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
         ->select('notifications.*', 'crews.nama_crew')
         ->get();
-        $NotifNotRead = Notification::where('is_read', false)->count();
-        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotRead', 'lokasis') );
+        $NotifNotReadNum = Notification::where('is_read', false)->count();
+        $NotifNotRead = Notification::where('is_read', false);
+        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'NotifNotRead', 'lokasis') );
     }
 
     /**
@@ -196,9 +197,16 @@ class CrewController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function UpdateNotif(Request $request)
     {
-        //
+        $notification = Notification::find($request->id);
+        if ($notification) {
+            $notification->is_read = true;
+            $notification->save();
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Notification not found.'], 404);
+        }
     }
 
     /**

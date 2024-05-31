@@ -26,3 +26,4 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/dashboard', [IndexController::class, 'show'])->name('dashboard')->middleware('auth');
 Route::get('/crew', [CrewController::class, 'show'])->name('crew')->middleware('auth');
 Route::post('/crew', [CrewController::class, 'store'])->middleware('auth')->name('tambah-crew');
+Route::post('/update-notif', [CrewController::class, 'UpdateNotif'])->middleware('auth');

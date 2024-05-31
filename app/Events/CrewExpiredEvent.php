@@ -9,18 +9,18 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Crew;
+use App\Models\Dokumen;
 
 class CrewExpiredEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $crew;
+    public $dokumen;
     public $warningType;
 
-    public function __construct(Crew $crew, string $warningType)
+    public function __construct(Dokumen $dokumen, string $warningType)
     {
-        $this->crew = $crew;
+        $this->dokumen = $dokumen;
         $this->warningType = $warningType;
     }
 

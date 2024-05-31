@@ -16,6 +16,9 @@
 
         <!-- Sweet Alert 2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         
         <!-- Responsive datatable examples -->
         <link href="assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet" type="text/css">
@@ -26,6 +29,12 @@
         <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css">
         <!-- App Css-->
         <link href="assets/css/app.min.css" id="app-style" rel="stylesheet" type="text/css">
+
+        <style>
+            .cursor-pointer{
+                cursor: pointer;
+            }
+        </style>
     
     </head>
 
@@ -69,8 +78,8 @@
                             <button type="button" class="btn header-item noti-icon waves-effect" id="page-header-notifications-dropdown"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="mdi mdi-bell-outline"></i>
-                                @if ( $NotifNotRead )
-                                <span class="badge bg-danger rounded-pill">{{ $NotifNotRead }}</span>
+                                @if ( $NotifNotReadNum )
+                                <span class="badge bg-danger rounded-pill">{{ $NotifNotReadNum }}</span>
                                 @endif
                             </button>
                             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
@@ -78,7 +87,7 @@
                                     <div class="row align-items-center">
                                         <div class="col">
                                             <h5 class="m-0 font-size-16">
-                                                 Notifications ({{ $NotifNotRead }})
+                                                 Notifications ({{ $NotifNotReadNum }})
                                             </h5>
                                         </div>
                                     </div>
@@ -86,8 +95,8 @@
                                 <div data-simplebar style="max-height: 230px;">
                                     @foreach ( $notifs as $notif )
                                         @if ($NotifNotRead)
-                                        <a href="" class="text-reset notification-item">
-                                            <div class="d-flex align-items-center">
+                                        <div class="text-reset notification-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#myNotif{{ $notif->id }}">
+                                            <div class="w-100 d-flex align-items-center">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar-xs">
                                                         <span class="avatar-title bg-warning rounded-circle font-size-16">
@@ -103,7 +112,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </a>
+                                        </div>
                                         @endif
                                     @endforeach
                                 </div>
@@ -579,6 +588,35 @@
         <!-- /.modal -->
         @endforeach
 
+        <!-- Modal Notif Content -->
+        @foreach ($notifs as $notif )
+            @if ($NotifNotRead)
+            <div id="myNotif{{ $notif->id }}" data-bs-backdrop="static" class="modal fade" tabindex="-1" role="dialog"
+                aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">Notifications
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="font-size-16">{{ $notif->title }}</h5>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary waves-effect"
+                                data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
+            @endif
+        @endforeach
+
         <!-- JAVASCRIPT -->
         <script src="assets/libs/jquery/jquery.min.js"></script>
         <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -693,6 +731,27 @@
                 fileList.appendChild(listItem);
             }
             }
+
+            $(document).ready(function() {
+                $('div[id^="myNotif"]').on('shown.bs.modal', function (e) {
+                    var modalId = $(this).attr('id');
+                    var notifId = modalId.replace('myNotif', '');
+                    $.ajax({
+                        url: '/update-notif',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: notifId
+                        },
+                        success: function(response) {
+                            console.log('Notification status updated successfully.');
+                        },
+                        error: function(error) {
+                            console.log('Error updating notification status:', error);
+                        }
+                    });
+                });
+            });
         </script>
 
             @if(session('error'))
