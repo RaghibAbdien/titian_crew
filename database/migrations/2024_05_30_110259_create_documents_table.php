@@ -20,9 +20,8 @@ return new class extends Migration
             $table->string('pkwt_path');
             $table->json('sertifikat_path');
             $table->string('ijazah_path');
-            $table->string('foto-crew_path');
+            $table->string('fotocrew_path');
             $table->string('npwp_path');
-            $table->string('no_rekening')->unique();
             $table->string('skck_path');
             $table->string('mcu_path');
             $table->date('tgl_mcu');

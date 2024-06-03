@@ -19,11 +19,14 @@ return new class extends Migration
             $table->string('email_crew')->unique();
             $table->string('nohp_crew')->unique();
             $table->unsignedBigInteger('lokasi_crew_id');
+            $table->unsignedBigInteger('id_bank');
+            $table->string('no_rekening')->unique();
             $table->boolean('status_crew')->default(true);
             $table->timestamps();
 
             
             $table->foreign('lokasi_crew_id')->references('id')->on('lokasi');
+            $table->foreign('id_bank')->references('id')->on('bank');
         });
     }
 

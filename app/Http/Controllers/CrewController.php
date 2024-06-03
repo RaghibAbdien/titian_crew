@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use App\Models\Lokasi;
+use App\Models\Bank;
 use App\Models\Crew;
 use App\Models\Dokumen;
 use App\Models\Notification;
@@ -20,16 +21,16 @@ class CrewController extends Controller
     public function show()
     {
         $lokasis = Lokasi::all();
+        $banks = Bank::all();
         $crews = Crew::all();
         $docs = Dokumen::join('crews', 'dokumens.id_crew', '=', 'crews.id_crew')
-        ->select('dokumens.*', 'crews.id_crew')
+        ->select('dokumens.*', 'crews.id_crew', 'crews.no_rekening', 'crews.id_bank')
         ->get();
         $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
-        ->where('notifications.is_read', false)
         ->select('notifications.*', 'crews.nama_crew')
         ->get();
         $NotifNotReadNum = Notification::where('is_read', false)->count();
-        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis') );
+        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks') );
     }
 
     /**
@@ -56,16 +57,17 @@ class CrewController extends Controller
             'email_crew' => 'required|email|max:50|unique:crews',
             'nohp_crew' => 'required|string|min:12|max:13|unique:crews|regex:/^\d+$/',
             'lokasi_crew_id' => 'required|exists:lokasi,id',
+            'id_bank' => 'required|exists:bank,id',
             'cv_path' => 'required|mimes:pdf|max:2048',
             'ktp_path' => 'required|mimes:pdf|max:2048',
             'vaksin_path.*' => 'required|mimes:pdf',
             'pkwt_path' => 'required|mimes:pdf|max:2048',
             'sertifikat_path.*' => 'required|mimes:pdf',
             'ijazah_path' => 'required|mimes:pdf|max:2048',
-            'foto-crew_path' => 'required|mimes:jpeg,jpg,png',
+            'fotocrew_path' => 'required|mimes:jpeg,jpg,png',
             'npwp_path' => 'required|mimes:pdf|max:2048',
             'skck_path' => 'required|mimes:pdf|max:2048',
-            'no_rekening' => 'required|min:10|max:16|unique:dokumens|regex:/^\d+$/',
+            'no_rekening' => 'required|min:10|max:16|unique:crews|regex:/^\d+$/',
             'mcu_path' => 'required|mimes:pdf|max:2048',
             'tgl_mcu' => 'required|date',
             'expired_mcu' => 'required|date|after_or_equal:tgl_mcu',
@@ -90,7 +92,7 @@ class CrewController extends Controller
         $pkwtFile = $request->file('pkwt_path');
         $sertifikatFiles = $request->file('sertifikat_path.*');
         $ijazahFile = $request->file('ijazah_path');
-        $fotoFile = $request->file('foto-crew_path');
+        $fotoFile = $request->file('fotocrew_path');
         $npwpFile = $request->file('npwp_path');
         $skckFile = $request->file('skck_path');
         $mcuFile = $request->file('mcu_path');
@@ -157,6 +159,8 @@ class CrewController extends Controller
             'email_crew' => $request->input('email_crew'),
             'nohp_crew' => $request->input('nohp_crew'),
             'lokasi_crew_id' => $request->input('lokasi_crew_id'),
+            'id_bank' => $request->input('id_bank'),
+            'no_rekening' => $request->input('no_rekening'),
         ]);
 
         Dokumen::create([
@@ -167,7 +171,7 @@ class CrewController extends Controller
             'pkwt_path' => $pkwtPath,
             'sertifikat_path' => json_encode($sertifikatPaths),
             'ijazah_path' => $ijazahPath,
-            'foto-crew_path' => $fotoPath,
+            'fotocrew_path' => $fotoPath,
             'npwp_path' => $npwpPath,
             'skck_path' => $skckPath,
             'mcu_path' => $mcuPath,
@@ -176,7 +180,6 @@ class CrewController extends Controller
             'warn_mcu' => $warn_mcu,
             'awal_kontrak' => $request->input('awal_kontrak'),
             'berakhir_kontrak' => $request->input('berakhir_kontrak'),
-            'no_rekening' => $request->input('no_rekening'),
             'warn_kontrak' => $warn_kontrak,
         ]);
 
@@ -184,6 +187,7 @@ class CrewController extends Controller
 
         return redirect()->route('crew')->with('success', 'Data berhasil ditambahkan');
     } catch (ValidationException $e) {
+        DB::rollBack();
         // Jika terjadi kesalahan validasi, kembali ke halaman sebelumnya dengan pesan kesalahan
         return redirect()->back()->withErrors($e->validator)->withInput();
     } catch (\Exception $e) {
@@ -199,14 +203,22 @@ class CrewController extends Controller
      */
     public function UpdateNotif(Request $request)
     {
-        $notification = Notification::find($request->id);
+        $notifId = $request->input('id');
+        $isNotifTime = $request->input('duration');
+
+        $notification = Notification::find($notifId);
         if ($notification) {
-            $notification->is_read = true;
+            // Update is_notif only if it is currently null
+            if (is_null($notification->duration)) {
+                $notification->duration = $isNotifTime;
+            }
+            $notification->is_read = true; // Misalnya, juga menandai sebagai sudah dibaca
             $notification->save();
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Notification not found.'], 404);
+
+            return response()->json(['message' => 'Notification status updated successfully.']);
         }
+
+        return response()->json(['message' => 'Notification not found.'], 404);
     }
 
     /**

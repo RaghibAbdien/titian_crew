@@ -4,7 +4,7 @@
     <head>
     
         <meta charset="utf-8">
-        <title>Dashboard | Veltrix - Admin & Dashboard Template</title>
+        <title>Management Crew</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description">
         <meta content="Themesbrand" name="author">
@@ -88,7 +88,7 @@
                                         <div class="col">
                                             <h5 class="m-0 pb-1 font-size-16 border-bottom">
                                                  Notifications @if ($NotifNotReadNum)
-                                                     {{ $NotifNotReadNum }}
+                                                     ({{ $NotifNotReadNum }})
                                                      @else 
                                                  @endif
                                             </h5>
@@ -97,7 +97,7 @@
                                 </div>
                                 <div data-simplebar style="max-height: 230px;">
                                     @forelse ( $notifs as $notif )
-                                    <div class="text-reset notification-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#myNotif{{ $notif->id }}">
+                                    <div class="text-reset notification-item cursor-pointer mb-1 {{ $notif->is_read ? 'bg-secondary' : '' }}" data-bs-toggle="modal" data-bs-target="#myNotif{{ $notif->id }}">
                                         <div class="w-100 d-flex align-items-center">
                                             <div class="flex-shrink-0 me-3">
                                                 <div class="avatar-xs">
@@ -230,7 +230,7 @@
                                                 <th>No.HP</th>
                                                 <th>Lokasi</th>
                                                 <th>Status</th>
-                                                <th>Detail</th>
+                                                <th>Aksi</th>
                                                 
                                                 
                                             </tr>
@@ -262,9 +262,13 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myDetail{{ $crew->id_crew }}">
-                                                            <i class="mdi mdi-eye"></i>
-                                                        </button>
+                                                        <div class="d-flex items-center gap-3">
+                                                            <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myDetail{{ $crew->id_crew }}">
+                                                                <i class="mdi mdi-eye"></i>
+                                                            <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myUpdate{{ $crew->id_crew }}">
+                                                                <i class="mdi mdi-pencil"></i>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     
                                                 </tr>
@@ -417,8 +421,8 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Foto Crew</label>
-                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="foto-crew_path">
-                                    @error('foto-crew_path')
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="fotocrew_path">
+                                    @error('fotocrew_path')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -471,6 +475,17 @@
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="card pb-3">
+                                    <label for="id_bank" class="form-label">Bank</label>
+                                    <select class="form-select" aria-label="Default select example" id="id_bank" name="id_bank" required>
+                                        @foreach($banks as $bank)
+                                            <option value="{{ $bank->id }}" {{ old('id_bank') == $bank->id ? 'selected' : '' }}>{{ $bank->nama_bank }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('lokasi_crew_id')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
                                 <div class="col-md-12 pb-3">
                                     <label for="no_rekening" class="form-label">No Rekening</label>
                                     <input type="text" class="form-control" id="no_rekening" name="no_rekening" required value="{{ old('no_rekening') }}">
@@ -503,9 +518,9 @@
                         </div>
                         <div class="modal-body">
                             <div class="card mb-3">
-                                <img src="assets/images/gallery/work-2.jpg" class="card-img-top" alt="...">
+                                <img src="{{ Storage::url($doc->fotocrew_path) }}" class="card-img-top" alt="...">
                                 <div class="card-body">
-                                  <h5 class="card-title">Keterangan</h5>
+                                  <h5 class="card-title">Dokumen Crew</h5>
                                   <ul class="card-text">
                                     <li class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -547,6 +562,12 @@
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>No. Rekening</span>
                                             <span class="fs-4 fw-bold">{{ $doc->no_rekening }}</span>
+                                        </div>
+                                    </li>    
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Bank</span>
+                                            <span class="fs-4 fw-bold">{{ $doc->crew->bank->nama_bank }}</span>
                                         </div>
                                     </li>    
                                     @if(!empty($doc->vaksin_path))
@@ -680,6 +701,11 @@
                 document.getElementById('expired_mcu').setAttribute('min', tglMcu);
             });
 
+            document.getElementById('awal_kontrak').addEventListener('change', function() {
+                var tglKontrak = this.value;
+                document.getElementById('berakhir_kontrak').setAttribute('min', tglKontrak);
+            });
+
             document.addEventListener('DOMContentLoaded', (event) => {
                 const tglMcuInput = document.getElementById('tgl_mcu');
                 const expiredMcuInput = document.getElementById('expired_mcu');
@@ -715,37 +741,54 @@
                 });
             });
 
-            const fileInput = document.getElementById('file-sertif');
-            const fileList = document.getElementById('file-list-sertif');
-            let selectedFiles = [];
+            // const fileInput = document.getElementById('file-sertif');
+            // const fileList = document.getElementById('file-list-sertif');
+            // let selectedFiles = [];
 
-            fileInput.addEventListener('change', function(event) {
-            const files = event.target.files;
-            for (const file of files) {
-                selectedFiles.push(file.name);
-            }
-            renderSelectedFiles();
-            });
+            // fileInput.addEventListener('change', function(event) {
+            // const files = event.target.files;
+            // for (const file of files) {
+            //     selectedFiles.push(file.name);
+            // }
+            // renderSelectedFiles();
+            // });
 
-            function renderSelectedFiles() {
-            fileList.innerHTML = '';
-            for (const fileName of selectedFiles) {
-                const listItem = document.createElement('li');
-                listItem.textContent = fileName;
-                fileList.appendChild(listItem);
-            }
-            }
+            // function renderSelectedFiles() {
+            // fileList.innerHTML = '';
+            // for (const fileName of selectedFiles) {
+            //     const listItem = document.createElement('li');
+            //     listItem.textContent = fileName;
+            //     fileList.appendChild(listItem);
+            // }
+            // }
 
             $(document).ready(function() {
                 $('div[id^="myNotif"]').on('shown.bs.modal', function (e) {
                     var modalId = $(this).attr('id');
                     var notifId = modalId.replace('myNotif', '');
+                    
+                     // Mendapatkan waktu saat ini
+                    var currentTime = new Date();
+
+                    // Menambahkan 7 hari ke waktu saat ini
+                    currentTime.setDate(currentTime.getDate() + 7);
+
+                    // Mengonversi waktu ke format yang sesuai untuk MySQL (YYYY-MM-DD HH:MM:SS)
+                    var year = currentTime.getFullYear();
+                    var month = ('0' + (currentTime.getMonth() + 1)).slice(-2);
+                    var day = ('0' + currentTime.getDate()).slice(-2);
+                    var hours = ('0' + currentTime.getHours()).slice(-2);
+                    var minutes = ('0' + currentTime.getMinutes()).slice(-2);
+                    var seconds = ('0' + currentTime.getSeconds()).slice(-2);
+                    var formattedTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+
                     $.ajax({
                         url: '/update-notif',
                         type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
-                            id: notifId
+                            id: notifId,
+                            duration: formattedTime
                         },
                         success: function(response) {
                             console.log('Notification status updated successfully.');
@@ -756,6 +799,7 @@
                     });
                 });
             });
+
 
             $(document).ready(function() {
                 $('div[id^="myNotif"]').on('hidden.bs.modal', function (e) {
@@ -782,7 +826,7 @@
                     icon: "success",
                     title: "{{ session('success') }}",
                     showConfirmButton: false,
-                    timer: 1500
+                    timer: 1750
                 });
             </script>
             @endif  

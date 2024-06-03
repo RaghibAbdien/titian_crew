@@ -16,6 +16,11 @@ class Crew extends Model
         return $this->belongsTo(Lokasi::class, 'lokasi_crew_id');
     }
 
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class, 'id_bank');
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'id_crew', 'id_crew');

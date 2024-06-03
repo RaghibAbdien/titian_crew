@@ -18,6 +18,8 @@ return new class extends Migration
             $table->text('message');
             $table->enum('jenis_notif', ['kontrak', 'mcu']);
             $table->boolean('is_read')->default(false);
+            $table->boolean('is_notif')->default(true);
+            $table->timestamp('duration')->nullable();
             $table->timestamps();
 
             // Menambahkan foreign key constraint

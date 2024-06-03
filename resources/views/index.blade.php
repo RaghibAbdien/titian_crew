@@ -4,12 +4,14 @@
     <head>
     
         <meta charset="utf-8">
-        <title>Dashboard | Veltrix - Admin & Dashboard Template</title>
+        <title>Dashboard</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="Premium Multipurpose Admin & Dashboard Template" name="description">
         <meta content="Themesbrand" name="author">
         <!-- App favicon -->
         <link rel="shortcut icon" href="assets/images/favicon.ico">
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <!-- Bootstrap Css -->
         <link href="assets/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css">
         <!-- Icons Css -->
@@ -258,6 +260,53 @@
         <script src="https://kit.fontawesome.com/91441035a6.js" crossorigin="anonymous"></script>
 
         <script src="assets/js/app.js"></script>
+
+        <script>
+            $(document).ready(function() {
+                $('div[id^="myNotif"]').on('shown.bs.modal', function (e) {
+                    var modalId = $(this).attr('id');
+                    var notifId = modalId.replace('myNotif', '');
+                    
+                     // Mendapatkan waktu saat ini
+                    var currentTime = new Date();
+
+                    // Menambahkan 7 hari ke waktu saat ini
+                    currentTime.setDate(currentTime.getDate() + 7);
+
+                    // Mengonversi waktu ke format yang sesuai untuk MySQL (YYYY-MM-DD HH:MM:SS)
+                    var year = currentTime.getFullYear();
+                    var month = ('0' + (currentTime.getMonth() + 1)).slice(-2);
+                    var day = ('0' + currentTime.getDate()).slice(-2);
+                    var hours = ('0' + currentTime.getHours()).slice(-2);
+                    var minutes = ('0' + currentTime.getMinutes()).slice(-2);
+                    var seconds = ('0' + currentTime.getSeconds()).slice(-2);
+                    var formattedTime = year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+
+                    $.ajax({
+                        url: '/update-notif',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: notifId,
+                            duration: formattedTime
+                        },
+                        success: function(response) {
+                            console.log('Notification status updated successfully.');
+                        },
+                        error: function(error) {
+                            console.log('Error updating notification status:', error);
+                        }
+                    });
+                });
+            });
+
+
+            $(document).ready(function() {
+                $('div[id^="myNotif"]').on('hidden.bs.modal', function (e) {
+                    location.reload(); // Reload halaman saat modal ditutup
+                });
+            });
+        </script>
 
 
     </body>
