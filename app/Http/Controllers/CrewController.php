@@ -25,11 +25,11 @@ class CrewController extends Controller
         ->select('dokumens.*', 'crews.id_crew')
         ->get();
         $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
+        ->where('notifications.is_read', false)
         ->select('notifications.*', 'crews.nama_crew')
         ->get();
         $NotifNotReadNum = Notification::where('is_read', false)->count();
-        $NotifNotRead = Notification::where('is_read', false);
-        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'NotifNotRead', 'lokasis') );
+        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis') );
     }
 
     /**

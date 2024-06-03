@@ -86,35 +86,40 @@
                                 <div class="p-3">
                                     <div class="row align-items-center">
                                         <div class="col">
-                                            <h5 class="m-0 font-size-16">
-                                                 Notifications ({{ $NotifNotReadNum }})
+                                            <h5 class="m-0 pb-1 font-size-16 border-bottom">
+                                                 Notifications @if ($NotifNotReadNum)
+                                                     {{ $NotifNotReadNum }}
+                                                     @else 
+                                                 @endif
                                             </h5>
                                         </div>
                                     </div>
                                 </div>
                                 <div data-simplebar style="max-height: 230px;">
-                                    @foreach ( $notifs as $notif )
-                                        @if ($NotifNotRead)
-                                        <div class="text-reset notification-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#myNotif{{ $notif->id }}">
-                                            <div class="w-100 d-flex align-items-center">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar-xs">
-                                                        <span class="avatar-title bg-warning rounded-circle font-size-16">
-                                                            <i class="fa-solid fa-triangle-exclamation"></i>
-                                                        </span>
-                                                    </div>
+                                    @forelse ( $notifs as $notif )
+                                    <div class="text-reset notification-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#myNotif{{ $notif->id }}">
+                                        <div class="w-100 d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="avatar-xs">
+                                                    <span class="avatar-title bg-warning rounded-circle font-size-16">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                    </span>
                                                 </div>
-                                                <div class="flex-grow-1">
-                                                    <h6 class="mb-1">{{ $notif->title }}</h6>
-                                                    <div class="font-size-12 text-muted">
-                                                        <span class="mb-1">Crew : {{ $notif->nama_crew }}</span>
-                                                        <p class="mb-1">{{ $notif->message }}</p>
-                                                    </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ $notif->title }}</h6>
+                                                <div class="font-size-12 text-muted">
+                                                    <span class="mb-1">Crew : {{ $notif->nama_crew }}</span>
+                                                    <p class="mb-1">{{ $notif->message }}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                        @endif
-                                    @endforeach
+                                    </div>
+                                    @empty
+                                        <div class="w-100 d-flex align-items-center">
+                                            <p class="mx-auto">Tidak ada pemberitahuan saat ini</p>
+                                        </div>
+                                    @endforelse 
                                 </div>
                                 <div class="p-2 border-top">
                                     <div class="d-grid">
@@ -590,7 +595,6 @@
 
         <!-- Modal Notif Content -->
         @foreach ($notifs as $notif )
-            @if ($NotifNotRead)
             <div id="myNotif{{ $notif->id }}" data-bs-backdrop="static" class="modal fade" tabindex="-1" role="dialog"
                 aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -614,7 +618,7 @@
                 <!-- /.modal-dialog -->
             </div>
             <!-- /.modal -->
-            @endif
+
         @endforeach
 
         <!-- JAVASCRIPT -->
@@ -752,6 +756,12 @@
                     });
                 });
             });
+
+            $(document).ready(function() {
+                $('div[id^="myNotif"]').on('hidden.bs.modal', function (e) {
+                    location.reload(); // Reload halaman saat modal ditutup
+                });
+            });
         </script>
 
             @if(session('error'))
@@ -764,6 +774,18 @@
                 });
             </script>
             @endif
+
+            @if (session('success'))
+            <script>
+                Swal.fire({
+                    position: "center",
+                    icon: "success",
+                    title: "{{ session('success') }}",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            </script>
+            @endif  
 
 
 
