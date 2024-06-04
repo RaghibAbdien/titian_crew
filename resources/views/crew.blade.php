@@ -34,6 +34,12 @@
             .cursor-pointer{
                 cursor: pointer;
             }
+
+            .docs{
+                display: grid;
+                grid-template-columns: repeat(3, auto);
+                gap: .5rem;
+            }
         </style>
     
     </head>
@@ -507,6 +513,216 @@
         </div>
         <!-- /.modal -->
 
+
+        <!-- Modal Edit Crew -->
+        @foreach ($updates as $update )
+        <div id="myUpdate{{ $update->id_crew }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myUpdateLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="updateCrewForm" action="{{ route('update-crew', ['id' => $update->id_crew]) }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="myModalLabel">Edit Crew</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="col">
+                                <div class="col-md-12 pb-3">
+                                    <label for="id-crew" class="form-label">ID Crew</label>
+                                    <input type="text" class="form-control bg-secondary" id="id-crew" name="id_crew" required value="{{ $update->id_crew }}" disabled>
+                                    @error('id_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12 pb-3">
+                                    <label for="nama" class="form-label">Nama Crew</label>
+                                    <input type="text" class="form-control" id="nama" name="nama_crew" autocomplete="name" required value="{{ $update->nama_crew }}">
+                                    @error('nama_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="alamat_crew">Alamat :</label>
+                                    <textarea id="alamat_crew" class="form-control" rows="3" name="alamat_crew" autocomplete="alamat_crew" required>{{ $update->alamat_crew }}</textarea>
+                                    @error('alamat_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12 pb-3">
+                                    <label for="email_crew" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email_crew" name="email_crew" autocomplete="email" required value="{{ $update->email_crew }}">
+                                    @error('email_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12 pb-3">
+                                    <label for="password_crew" class="form-label">No. HP</label>
+                                    <input type="text" class="form-control" id="password_crew" name="nohp_crew" autocomplete="nohp_crew" required value="{{ $update->nohp_crew }}">
+                                    @error('nohp_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="card pb-3">
+                                    <label for="lokasi_crew" class="form-label">Lokasi</label>
+                                    <select class="form-select" aria-label="Default select example" id="lokasi_crew" name="lokasi_crew_id" required>
+                                        @foreach($lokasis as $lokasi)
+                                            <option value="{{ $lokasi->id }}" {{ $update->lokasi_crew_id == $lokasi->id ? 'selected' : '' }}>{{ $lokasi->nama_lokasi }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('lokasi_crew_id')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="card pb-3">
+                                    <label for="lokasi_crew" class="form-label">Status Crew</label>
+                                    <select class="form-select" aria-label="Default select example" id="lokasi_crew" name="status_crew" required>
+                                        <option value="1" selected>Aktif</option>
+                                        <option value="0">Tidak Aktif</option>
+                                    </select>
+                                    @error('status_crew')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">CV (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="cv_path">
+                                    @error('cv_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">KTP (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="ktp_path">
+                                    @error('ktp_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Vaksin (.pdf) (2MB)</label>
+                                    <input type="file" multiple class="filestyle" data-buttonname="btn-secondary" id="file-vaksin" name="vaksin_path[]">
+                                    @if($errors->has('vaksin_path.*'))
+                                        <div class="text-danger">
+                                            @foreach($errors->get('vaksin_path.*') as $message)
+                                                {{ $message[0] }}<br>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">PKWT (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="pkwt_path">
+                                    @error('pkwt_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Sertifikat (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" id="file-sertif" name="sertifikat_path[]" multiple>
+                                    @if($errors->has('sertifikat_path.*'))
+                                        <div class="text-danger">
+                                            @foreach($errors->get('sertifikat_path.*') as $message)
+                                                {{ $message[0] }}<br>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ijazah (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="ijazah_path">
+                                    @error('ijazah_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Foto Crew</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="fotocrew_path">
+                                    @error('fotocrew_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">NPWP (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="npwp_path">
+                                    @error('npwp_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">SKCK (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="skck_path">
+                                    @error('skck_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Medical Check Up (.pdf) (2MB)</label>
+                                    <input type="file" class="filestyle" data-buttonname="btn-secondary" name="mcu_path">
+                                    @error('mcu_path')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tgl_mcu" class="col-sm-6 col-form-label">Tanggal Pemeriksaan MCU</label>
+                                    <input class="form-control" type="date" id="tgl_mcu" required name="tgl_mcu" value="{{ $update->tgl_mcu }}">
+                                    @error('tgl_mcu')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="expired_mcu" class="col-sm-6 col-form-label">Tanggal Expired MCU</label>
+                                    <input class="form-control" type="date" id="expired_mcu" required name="expired_mcu" value="{{ $update->expired_mcu }}">
+                                    @error('expired_mcu')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="awal_kontrak" class="col-sm-6 col-form-label">Tanggal Mulai Kontrak</label>
+                                    <input class="form-control" type="date" id="awal_kontrak" required name="awal_kontrak" value="{{ $update->awal_kontrak }}">
+                                    @error('awal_kontrak')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="berakhir_kontrak" class="col-sm-6 col-form-label">Tanggal Berakhir Kontrak</label>
+                                    <input class="form-control" type="date" id="berakhir_kontrak" required name="berakhir_kontrak" value="{{ $update->berakhir_kontrak }}">
+                                    @error('berakhir_kontrak')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="card pb-3">
+                                    <label for="id_bank" class="form-label">Bank</label>
+                                    <select class="form-select" aria-label="Default select example" id="id_bank" name="id_bank" required>
+                                        @foreach($banks as $bank)
+                                            <option value="{{ $bank->id }}" {{ $update->id_bank == $bank->id ? 'selected' : '' }}>{{ $bank->nama_bank }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('lokasi_crew_id')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12 pb-3">
+                                    <label for="no_rekening" class="form-label">No Rekening</label>
+                                    <input type="text" class="form-control" id="no_rekening" name="no_rekening" required value="{{ $update->no_rekening }}">
+                                    @error('no_rekening')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary waves-effect waves-light">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+        @endforeach
+        <!-- /.modal -->
+
         <!-- Modal Detail Crew -->
         @foreach ($docs as $doc )
         <div id="myDetail{{ $doc->id_crew }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -588,7 +804,7 @@
                                    <li class="list-group-item">
                                        <div class="d-flex flex-column justify-content-between align-items-center">
                                            <span>Sertifikat</span>
-                                           <div>
+                                           <div class="docs my-2">
                                                @php $no = 1; @endphp
                                                 @foreach(json_decode($doc->sertifikat_path) as $sertif)
                                                <a href="{{ Storage::url($sertif) }}" target="_blank" class="btn btn-primary waves-effect waves-light">Sertif No. {{ $no }}</a>
@@ -660,9 +876,6 @@
         <!-- Datatable init js -->
         <script src="assets/js/pages/datatables.init.js"></script>
 
-        <!-- Form  -->
-        <script src="assets/libs/admin-resources/bootstrap-filestyle/bootstrap-filestyle.min.js"></script>
-
         <!-- FontAwesome Icon Link -->
         <script src="https://kit.fontawesome.com/91441035a6.js" crossorigin="anonymous"></script>
 
@@ -670,31 +883,31 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Reset form and clear error messages when modal is closed
-                var modalElement = document.getElementById('myModal');
-                var formElement = document.getElementById('crewForm');
-                var errorElements = document.querySelectorAll('.text-danger');
-        
-                modalElement.addEventListener('hidden.bs.modal', function (event) {
-                    formElement.reset();
-                    formElement.querySelectorAll('.form-control').forEach(function(input) {
-                        input.value = '';
-                    });
-                    formElement.querySelectorAll('.form-select').forEach(function(select) {
-                        select.selectedIndex = 0;
-                    });
-                    // Clear error messages
-                    errorElements.forEach(function(error) {
-                        error.textContent = '';
-                    });
+            // Reset form and clear error messages when modal is closed
+            var modalElement = document.getElementById('myModal');
+            var formElement = document.getElementById('crewForm');
+            var errorElements = document.querySelectorAll('.text-danger');
+
+            modalElement.addEventListener('hidden.bs.modal', function (event) {
+                formElement.reset();
+                formElement.querySelectorAll('.form-control').forEach(function(input) {
+                    input.value = '';
                 });
-        
-                // Show error messages when modal is opened
-                @if ($errors->any())
-                    var myModal = new bootstrap.Modal(document.getElementById('myModal'));
-                    myModal.show();
-                @endif
+                formElement.querySelectorAll('.form-select').forEach(function(select) {
+                    select.selectedIndex = 0;
+                });
+                // Clear error messages
+                errorElements.forEach(function(error) {
+                    error.textContent = '';
+                });
             });
+
+            // Show error messages when modal is opened only for store operation
+            @if ($errors->any())  
+                var myModal = new bootstrap.Modal(document.getElementById('myModal'));
+                myModal.show();
+            @endif
+
 
             document.getElementById('tgl_mcu').addEventListener('change', function() {
                 var tglMcu = this.value;
@@ -740,27 +953,6 @@
                     }
                 });
             });
-
-            // const fileInput = document.getElementById('file-sertif');
-            // const fileList = document.getElementById('file-list-sertif');
-            // let selectedFiles = [];
-
-            // fileInput.addEventListener('change', function(event) {
-            // const files = event.target.files;
-            // for (const file of files) {
-            //     selectedFiles.push(file.name);
-            // }
-            // renderSelectedFiles();
-            // });
-
-            // function renderSelectedFiles() {
-            // fileList.innerHTML = '';
-            // for (const fileName of selectedFiles) {
-            //     const listItem = document.createElement('li');
-            //     listItem.textContent = fileName;
-            //     fileList.appendChild(listItem);
-            // }
-            // }
 
             $(document).ready(function() {
                 $('div[id^="myNotif"]').on('shown.bs.modal', function (e) {

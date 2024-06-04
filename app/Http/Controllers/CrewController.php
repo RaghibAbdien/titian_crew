@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\DB;
-use App\Models\Lokasi;
 use App\Models\Bank;
 use App\Models\Crew;
+use App\Models\Lokasi;
 use App\Models\Dokumen;
 use App\Models\Notification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class CrewController extends Controller
 {
@@ -27,10 +31,14 @@ class CrewController extends Controller
         ->select('dokumens.*', 'crews.id_crew', 'crews.no_rekening', 'crews.id_bank')
         ->get();
         $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
+        ->where('is_notif', true)
         ->select('notifications.*', 'crews.nama_crew')
         ->get();
         $NotifNotReadNum = Notification::where('is_read', false)->count();
-        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks') );
+        $updates = Crew::join('dokumens', 'crews.id_crew', '=', 'dokumens.id_crew')
+        ->select('crews.*', 'dokumens.*')
+        ->get();
+        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates') );
     }
 
     /**
@@ -224,9 +232,231 @@ class CrewController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateCrew(Request $request, string $id)
     {
-        //
+
+        DB::beginTransaction();
+
+        try {
+ 
+            $crew = Crew::where('id_crew', $id)->first();
+            $dokumen = $crew->documents;
+
+            $request->validate([
+                'nama_crew' => 'required|string|max:50|regex:/^[a-zA-Z\s]+$/',
+                'alamat_crew' => 'required|string',
+                'email_crew' => [
+                    'required',
+                    'email',
+                    'max:50',
+                    Rule::unique('crews', 'email_crew')->ignore($crew, 'id_crew'),
+                ],                
+                'nohp_crew' => [
+                    'required',
+                    'string',
+                    'min:12',
+                    'max:13',
+                    Rule::unique('crews', 'nohp_crew')->ignore($crew, 'id_crew'),
+                    'regex:/^\d+$/'
+                ],
+                'lokasi_crew_id' => 'required|exists:lokasi,id',
+                'status_crew' => 'required|',
+                'id_bank' => 'required|exists:bank,id',
+                'no_rekening' => [
+                    'required',
+                    'min:10',
+                    'max:16',
+                    Rule::unique('crews', 'no_rekening')->ignore($crew, 'id_crew'),
+                    'regex:/^\d+$/'
+                ],
+                'cv_path' => 'sometimes|mimes:pdf|max:2048',
+                'ktp_path' => 'sometimes|mimes:pdf|max:2048',
+                'vaksin_path.*' => 'sometimes|mimes:pdf',
+                'pkwt_path' => 'sometimes|mimes:pdf|max:2048',
+                'sertifikat_path.*' => 'sometimes|mimes:pdf',
+                'ijazah_path' => 'sometimes|mimes:pdf|max:2048',
+                'fotocrew_path' => 'sometimes|mimes:jpeg,jpg,png',
+                'npwp_path' => 'sometimes|mimes:pdf|max:2048',
+                'skck_path' => 'sometimes|mimes:pdf|max:2048',
+                'mcu_path' => 'sometimes|mimes:pdf|max:2048',
+                'tgl_mcu' => 'required|date',
+                'expired_mcu' => 'required|date|after_or_equal:tgl_mcu',
+                'awal_kontrak' => 'required|date',
+                'berakhir_kontrak' => 'required|date|after_or_equal:awal_kontrak',
+            ], [
+                'expired_mcu.after_or_equal' => 'The expired_mcu date must be a date after or equal to tgl_mcu.',
+                'berakhir_kontrak.after_or_equal' => 'The berakhir_kontrak date must be a date after or equal to awal_kontrak.',
+            ]);
+
+            
+
+            // Ambil input dari request
+            $nama = $request->input('nama_crew');
+            $warn_mcu = Carbon::parse($request->input('expired_mcu'))->subMonths(1);
+            $warn_kontrak = Carbon::parse($request->input('berakhir_kontrak'))->subMonths(1);
+
+            // Dapatkan file dari request jika ada
+            $cvFile = $request->file('cv_path');
+            $ktpFile = $request->file('ktp_path');
+            $vaksinFiles = $request->file('vaksin_path');
+            $pkwtFile = $request->file('pkwt_path');
+            $sertifikatFiles = $request->file('sertifikat_path');
+            $ijazahFile = $request->file('ijazah_path');
+            $fotoFile = $request->file('fotocrew_path');
+            $npwpFile = $request->file('npwp_path');
+            $skckFile = $request->file('skck_path');
+            $mcuFile = $request->file('mcu_path');
+
+            // Simpan file baru dan hapus file lama jika ada
+            if ($cvFile) {
+                Storage::delete($dokumen->cv_path);
+                $cvFileName = $nama . '_cv.' . $cvFile->getClientOriginalExtension();
+                $cvPath = $cvFile->storeAs('public/uploads/cv', $cvFileName);
+            } else {
+                $cvPath = $dokumen->cv_path;
+            }
+
+            if ($ktpFile) {
+                Storage::delete($dokumen->ktp_path);
+                $ktpFileName = $nama . '_ktp.' . $ktpFile->getClientOriginalExtension();
+                $ktpPath = $ktpFile->storeAs('public/uploads/ktp', $ktpFileName);
+            } else {
+                $ktpPath = $dokumen->ktp_path;
+            }
+
+            // Simpan multiple file vaksin sebagai array JSON
+            $vaksinPaths = json_decode($dokumen->vaksin_path, true);
+            if (!empty($vaksinFiles)) {
+                if (is_array($vaksinFiles)) {
+                    foreach ($vaksinFiles as $index => $vaksinFile) {
+                        $vaksinFileName = $nama . '_vaksin_' . (count($vaksinPaths) + $index + 1) . '.' . $vaksinFile->getClientOriginalExtension();
+                        $vaksinPaths[] = $vaksinFile->storeAs('public/uploads/vaksin', $vaksinFileName);
+                    }
+                } else {
+                    $vaksinFileName = $nama . '_vaksin.' . $vaksinFiles->getClientOriginalExtension();
+                    $vaksinPaths[] = $vaksinFiles->storeAs('public/uploads/vaksin', $vaksinFileName);
+                }
+            }
+
+            // Simpan multiple file sertifikat sebagai array JSON, tanpa menghapus file lama
+            $sertifikatPaths = json_decode($dokumen->sertifikat_path, true);
+            if (!empty($sertifikatFiles)) {
+                if (is_array($sertifikatFiles)) {
+                    foreach ($sertifikatFiles as $index => $sertifikatFile) {
+                        $sertifikatFileName = $nama . '_sertifikat_' . (count($sertifikatPaths) + $index + 1) . '.' . $sertifikatFile->getClientOriginalExtension();
+                        $sertifikatPaths[] = $sertifikatFile->storeAs('public/uploads/sertifikat', $sertifikatFileName);
+                    }
+                } else {
+                    $sertifikatFileName = $nama . '_sertifikat_' . (count($sertifikatPaths) + 1) . '.' . $sertifikatFiles->getClientOriginalExtension();
+                    $sertifikatPaths[] = $sertifikatFiles->storeAs('public/uploads/sertifikat', $sertifikatFileName);
+                }
+            }
+
+            if ($pkwtFile) {
+                Storage::delete($dokumen->pkwt_path);
+                $pkwtFileName = $nama . '_pkwt.' . $pkwtFile->getClientOriginalExtension();
+                $pkwtPath = $pkwtFile->storeAs('public/uploads/pkwt', $pkwtFileName);
+            } else {
+                $pkwtPath = $dokumen->pkwt_path;
+            }
+
+            if ($ijazahFile) {
+                Storage::delete($dokumen->ijazah_path);
+                $ijazahFileName = $nama . '_ijazah.' . $ijazahFile->getClientOriginalExtension();
+                $ijazahPath = $ijazahFile->storeAs('public/uploads/ijazah', $ijazahFileName);
+            } else {
+                $ijazahPath = $dokumen->ijazah_path;
+            }
+
+            if ($fotoFile) {
+                Storage::delete($dokumen->fotocrew_path);
+                $fotoFileName = $nama . '_foto.' . $fotoFile->getClientOriginalExtension();
+                $fotoPath = $fotoFile->storeAs('public/uploads/foto', $fotoFileName);
+            } else {
+                $fotoPath = $dokumen->fotocrew_path;
+            }
+
+            if ($npwpFile) {
+                Storage::delete($dokumen->npwp_path);
+                $npwpFileName = $nama . '_npwp.' . $npwpFile->getClientOriginalExtension();
+                $npwpPath = $npwpFile->storeAs('public/uploads/npwp', $npwpFileName);
+            } else {
+                $npwpPath = $dokumen->npwp_path;
+            }
+
+            if ($skckFile) {
+                Storage::delete($dokumen->skck_path);
+                $skckFileName = $nama . '_skck.' . $skckFile->getClientOriginalExtension();
+                $skckPath = $skckFile->storeAs('public/uploads/skck', $skckFileName);
+            } else {
+                $skckPath = $dokumen->skck_path;
+            }
+
+            if ($mcuFile) {
+                Storage::delete($dokumen->mcu_path);
+                $mcuFileName = $nama . '_mcu.' . $mcuFile->getClientOriginalExtension();
+                $mcuPath = $mcuFile->storeAs('public/uploads/mcu', $mcuFileName);
+            } else {
+                $mcuPath = $dokumen->mcu_path;
+            }
+
+            // Perbarui data crew
+            $crew->update([
+                'nama_crew' => $request->input('nama_crew'),
+                'alamat_crew' => $request->input('alamat_crew'),
+                'email_crew' => $request->input('email_crew'),
+                'nohp_crew' => $request->input('nohp_crew'),
+                'lokasi_crew_id' => $request->input('lokasi_crew_id'),
+                'status_crew' => $request->input('status_crew'),
+                'id_bank' => $request->input('id_bank'),
+                'no_rekening' => $request->input('no_rekening'),
+            ]);
+
+            // Perbarui data dokumen
+            $updateData = [
+                'cv_path' => $cvPath,
+                'ktp_path' => $ktpPath,
+                'vaksin_path' => json_encode($vaksinPaths),
+                'pkwt_path' => $pkwtPath,
+                'sertifikat_path' => json_encode($sertifikatPaths),
+                'ijazah_path' => $ijazahPath,
+                'fotocrew_path' => $fotoPath,
+                'npwp_path' => $npwpPath,
+                'skck_path' => $skckPath,
+                'mcu_path' => $mcuPath,
+                'tgl_mcu' => $request->input('tgl_mcu'),
+                'expired_mcu' => $request->input('expired_mcu'),
+                'warn_mcu' => $warn_mcu,
+                'awal_kontrak' => $request->input('awal_kontrak'),
+                'berakhir_kontrak' => $request->input('berakhir_kontrak'),
+                'warn_kontrak' => $warn_kontrak,
+            ];
+            
+            // Hapus kunci dengan nilai null dari array updateData
+            $updateData = array_filter($updateData, function($value) {
+                return !is_null($value);
+            });
+            
+            // Lakukan update jika array updateData tidak kosong
+            if (!empty($updateData)) {
+                $dokumen->update($updateData);
+            }
+            
+
+            DB::commit();
+
+            return redirect()->route('crew')->with('success', 'Data berhasil diperbarui');
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            // Jika terjadi kesalahan validasi, kembali ke halaman sebelumnya dengan pesan kesalahan
+            return redirect()->back()->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            // Jika terjadi kesalahan lain, kembali ke halaman sebelumnya dengan pesan kesalahan umum
+            DB::rollBack();
+            return redirect()->back()->with('error', $e->getMessage())->withInput();
+        }
+
+
     }
 
     /**
