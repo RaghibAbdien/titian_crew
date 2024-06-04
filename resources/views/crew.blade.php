@@ -392,10 +392,6 @@
                                         </div>
                                     @endif
                                 </div>
-                                <div id="selected-files">
-                                    <h6>File yang Dipilih:</h6>
-                                    <ul id="file-list-vaksin"></ul>
-                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">PKWT (.pdf) (2MB)</label>
                                     <input type="file" class="filestyle" data-buttonname="btn-secondary" name="pkwt_path">
@@ -413,10 +409,6 @@
                                             @endforeach
                                         </div>
                                     @endif
-                                </div>
-                                <div id="selected-files">
-                                    <h6>File yang Dipilih:</h6>
-                                    <ul id="file-list-sertif"></ul>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Ijazah (.pdf) (2MB)</label>
