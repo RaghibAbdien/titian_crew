@@ -57,17 +57,11 @@ class CrewController extends Controller
         $updates = Crew::join('dokumens', 'crews.id_crew', '=', 'dokumens.id_crew')
         ->select('crews.*', 'dokumens.*')
         ->get();
+        $isEdit = true;
 
-        return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates') );
+        return view('pages.crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates', 'isEdit') );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.

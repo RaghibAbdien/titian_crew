@@ -17,42 +17,7 @@ class IndexController extends Controller
     {
         $jmlhCrew = Crew::all()->where('status_crew', true)->count();
         $jmlhLokasi = Lokasi::all()->count();
-        $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
-        ->select('notifications.*', 'crews.nama_crew')
-        ->get();
-        $NotifNotRead = Notification::where('is_read', false)->count();
-        return view('index', compact('jmlhCrew','jmlhLokasi','notifs', 'NotifNotRead'));
+        return view('pages.index', compact('jmlhCrew','jmlhLokasi'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }
