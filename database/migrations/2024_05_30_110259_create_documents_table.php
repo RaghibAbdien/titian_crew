@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('fotocrew_path');
             $table->string('npwp_path');
             $table->string('skck_path');
-            $table->string('mcu_path');
+            $table->json('mcu_path');
             $table->date('tgl_mcu');
             $table->date('expired_mcu');
             $table->date('warn_mcu');

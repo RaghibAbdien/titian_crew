@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use App\Models\Bank;
 use App\Models\Crew;
 use App\Models\Lokasi;
@@ -30,6 +31,24 @@ class CrewController extends Controller
         $docs = Dokumen::join('crews', 'dokumens.id_crew', '=', 'crews.id_crew')
         ->select('dokumens.*', 'crews.id_crew', 'crews.no_rekening', 'crews.id_bank')
         ->get();
+        foreach ($docs as $doc) {
+            $awalMCU = new DateTime($doc->tgl_mcu);
+            $berakhirMCU = new DateTime($doc->expired_mcu);
+            $selisih = $awalMCU->diff($berakhirMCU)->format('%a hari');
+            $doc->selisih_hari = $selisih;
+        }
+        foreach ($docs as $doc) {
+            $awalKontrak = new DateTime($doc->awal_kontrak);
+            $berakhirKontrak = new DateTime($doc->berakhir_kontrak);
+            $interval = $awalKontrak->diff($berakhirKontrak);
+            $sisaKontrak = sprintf(
+                '%d tahun %d bulan %d hari',
+                $interval->y,
+                $interval->m,
+                $interval->d
+            );
+            $doc->kontrak = $sisaKontrak;
+        }
         $notifs = Notification::join('crews', 'notifications.id_crew', '=', 'crews.id_crew')
         ->where('is_notif', true)
         ->select('notifications.*', 'crews.nama_crew')
@@ -38,6 +57,7 @@ class CrewController extends Controller
         $updates = Crew::join('dokumens', 'crews.id_crew', '=', 'dokumens.id_crew')
         ->select('crews.*', 'dokumens.*')
         ->get();
+
         return view('crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates') );
     }
 
@@ -76,7 +96,7 @@ class CrewController extends Controller
             'npwp_path' => 'required|mimes:pdf|max:2048',
             'skck_path' => 'required|mimes:pdf|max:2048',
             'no_rekening' => 'required|min:10|max:16|unique:crews|regex:/^\d+$/',
-            'mcu_path' => 'required|mimes:pdf|max:2048',
+            'mcu_path.*' => 'required|mimes:pdf|',
             'tgl_mcu' => 'required|date',
             'expired_mcu' => 'required|date|after_or_equal:tgl_mcu',
             'awal_kontrak' => 'required|date',
@@ -103,7 +123,7 @@ class CrewController extends Controller
         $fotoFile = $request->file('fotocrew_path');
         $npwpFile = $request->file('npwp_path');
         $skckFile = $request->file('skck_path');
-        $mcuFile = $request->file('mcu_path');
+        $mcuFiles = $request->file('mcu_path.*');
 
         // Tentukan nama file baru dengan nama input dan ekstensi asli
         $cvFileName = $nama . '_cv.' . $cvFile->getClientOriginalExtension();
@@ -113,7 +133,6 @@ class CrewController extends Controller
         $fotoFileName = $nama . '_foto.' . $fotoFile->getClientOriginalExtension();
         $npwpFileName = $nama . '_npwp.' . $npwpFile->getClientOriginalExtension();
         $skckFileName = $nama . '_skck.' . $skckFile->getClientOriginalExtension();
-        $mcuFileName = $nama . '_mcu.' . $mcuFile->getClientOriginalExtension();
  
         // Simpan file ke penyimpanan
         $cvPath = $cvFile->storeAs('public/uploads/cv', $cvFileName);
@@ -123,7 +142,6 @@ class CrewController extends Controller
         $fotoPath = $fotoFile->storeAs('public/uploads/foto', $fotoFileName);
         $npwpPath = $npwpFile->storeAs('public/uploads/npwp', $npwpFileName);
         $skckPath = $skckFile->storeAs('public/uploads/skck', $skckFileName);
-        $mcuPath = $mcuFile->storeAs('public/uploads/mcu', $mcuFileName);
  
 
         // Simpan multiple file vaksin dan sertifikat sebagai array JSON
@@ -158,6 +176,21 @@ class CrewController extends Controller
             }
         }
 
+        $mcuPaths = [];
+        if (!empty($mcuFiles)) {
+            if (is_array($mcuFiles)) {
+                // Jika lebih dari satu file diunggah
+                foreach ($mcuFiles as $index => $mcuFile) {
+                    $mcuFileName = $nama . '_mcu_' . $index+1 . '.' . $mcuFile->getClientOriginalExtension();
+                    $mcuPaths[] = $mcuFile->storeAs('public/uploads/mcu', $mcuFileName);
+                }
+            } else {
+                // Jika hanya satu file diunggah
+                $mcuFileName = $nama . '_mcu.' . $mcuFiles->getClientOriginalExtension();
+                $mcuPaths[] = $mcuFiles->storeAs('public/uploads/mcu', $mcuFileName);
+            }
+        }
+
 
         // Buat record baru di tabel crews
         Crew::create([
@@ -182,7 +215,7 @@ class CrewController extends Controller
             'fotocrew_path' => $fotoPath,
             'npwp_path' => $npwpPath,
             'skck_path' => $skckPath,
-            'mcu_path' => $mcuPath,
+            'mcu_path' => json_encode($mcuPaths),
             'tgl_mcu' => $request->input('tgl_mcu'),
             'expired_mcu' => $request->input('expired_mcu'),
             'warn_mcu' => $warn_mcu,
@@ -278,7 +311,7 @@ class CrewController extends Controller
                 'fotocrew_path' => 'sometimes|mimes:jpeg,jpg,png',
                 'npwp_path' => 'sometimes|mimes:pdf|max:2048',
                 'skck_path' => 'sometimes|mimes:pdf|max:2048',
-                'mcu_path' => 'sometimes|mimes:pdf|max:2048',
+                'mcu_path.*' => 'sometimes|mimes:pdf|',
                 'tgl_mcu' => 'required|date',
                 'expired_mcu' => 'required|date|after_or_equal:tgl_mcu',
                 'awal_kontrak' => 'required|date',
@@ -292,20 +325,35 @@ class CrewController extends Controller
 
             // Ambil input dari request
             $nama = $request->input('nama_crew');
-            $warn_mcu = Carbon::parse($request->input('expired_mcu'))->subMonths(1);
-            $warn_kontrak = Carbon::parse($request->input('berakhir_kontrak'))->subMonths(1);
+            $tglEXPMCU = $request->input('expired_mcu');
+            if($tglEXPMCU != $dokumen->expired_mcu){
+                $warn_mcu = Carbon::parse($tglEXPMCU)->subMonths(1);
+                $dokumen->update(['is_notif_mcu' => false, 'expired_mcu' => $tglEXPMCU]);
+                Log::info('Tanggal Peringatan MCU: ' . $warn_mcu);
+            } else{
+                $warn_mcu = $dokumen->warn_mcu;
+            }
+            
+            $tglBerakhirKontrak = $request->input('berakhir_kontrak');
+            if($tglBerakhirKontrak != $dokumen->berakhir_kontrak){
+                $warn_kontrak = Carbon::parse($tglBerakhirKontrak)->subMonths(1);
+                $dokumen->update(['is_notif_kontrak' => false, 'berakhir_kontrak' => $tglBerakhirKontrak]);
+                Log::info('Tanggal Peringatan Kontrak: ' . $warn_kontrak);
+            } else{
+                $warn_kontrak = $dokumen->warn_kontrak;
+            }
 
             // Dapatkan file dari request jika ada
             $cvFile = $request->file('cv_path');
             $ktpFile = $request->file('ktp_path');
-            $vaksinFiles = $request->file('vaksin_path');
+            $vaksinFiles = $request->file('vaksin_path.*');
             $pkwtFile = $request->file('pkwt_path');
-            $sertifikatFiles = $request->file('sertifikat_path');
+            $sertifikatFiles = $request->file('sertifikat_path.*');
             $ijazahFile = $request->file('ijazah_path');
             $fotoFile = $request->file('fotocrew_path');
             $npwpFile = $request->file('npwp_path');
             $skckFile = $request->file('skck_path');
-            $mcuFile = $request->file('mcu_path');
+            $mcuFiles = $request->file('mcu_path.*');
 
             // Simpan file baru dan hapus file lama jika ada
             if ($cvFile) {
@@ -392,13 +440,18 @@ class CrewController extends Controller
                 $skckPath = $dokumen->skck_path;
             }
 
-            if ($mcuFile) {
-                Storage::delete($dokumen->mcu_path);
-                $mcuFileName = $nama . '_mcu.' . $mcuFile->getClientOriginalExtension();
-                $mcuPath = $mcuFile->storeAs('public/uploads/mcu', $mcuFileName);
-            } else {
-                $mcuPath = $dokumen->mcu_path;
-            }
+            $mcuPaths = json_decode($dokumen->mcu_path, true);
+            if (!empty($mcuFiles)) {
+                if (is_array($mcuFiles)) {
+                    foreach ($mcuFiles as $index => $mcuFile) {
+                        $mcuFileName = $nama . '_mcu_' . (count($mcuPaths) + $index + 1) . '.' . $mcuFile->getClientOriginalExtension();
+                        $mcuPaths[] = $mcuFile->storeAs('public/uploads/mcu', $mcuFileName);
+                    }
+                } else {
+                    $mcuFileName = $nama . '_mcu_' . (count($mcuPaths) + 1) . '.' . $mcuFiles->getClientOriginalExtension();
+                    $mcuPaths[] = $mcuFiles->storeAs('public/uploads/mcu', $mcuFileName);
+                }
+            }    
 
             // Perbarui data crew
             $crew->update([
@@ -423,12 +476,10 @@ class CrewController extends Controller
                 'fotocrew_path' => $fotoPath,
                 'npwp_path' => $npwpPath,
                 'skck_path' => $skckPath,
-                'mcu_path' => $mcuPath,
+                'mcu_path' => json_encode($mcuPaths),
                 'tgl_mcu' => $request->input('tgl_mcu'),
-                'expired_mcu' => $request->input('expired_mcu'),
                 'warn_mcu' => $warn_mcu,
                 'awal_kontrak' => $request->input('awal_kontrak'),
-                'berakhir_kontrak' => $request->input('berakhir_kontrak'),
                 'warn_kontrak' => $warn_kontrak,
             ];
             
@@ -462,8 +513,45 @@ class CrewController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+        public function hapusSertif(Request $request, $id)
     {
-        //
+        $indexToRemove = $request->input('index');
+
+        Log::info('Index to remove: ' . $indexToRemove);
+
+        // Ambil data user berdasarkan ID
+        $doc = Dokumen::find($id);
+
+        if ($doc) {
+            // Decode kolom sertifikat_path ke array
+            $sertifikatPathArray = json_decode($doc->sertifikat_path, true);
+
+            Log::info('Current certificate paths: ' . json_encode($sertifikatPathArray));
+
+            // Periksa apakah indeks yang ingin dihapus ada dalam array
+            if (isset($sertifikatPathArray[$indexToRemove])) {
+                // Hapus objek dari array
+                unset($sertifikatPathArray[$indexToRemove]);
+
+                // Reindex array untuk menghilangkan gap dalam array numerik
+                $sertifikatPathArray = array_values($sertifikatPathArray);
+
+                // Encode array kembali ke JSON
+                $updatedSertifikatPath = json_encode($sertifikatPathArray);
+
+                // Simpan perubahan ke database
+                $doc->sertifikat_path = $updatedSertifikatPath;
+                $doc->save();
+
+                return redirect()->back()->with('success', 'Sertifikat berhasil dihapus');
+            } else {
+                Log::error('Index not found in certificate paths');
+                return redirect()->back()->with('error', 'Indeks tidak ditemukan');
+            }
+        } else {
+            Log::error('Document not found');
+            return redirect()->back()->with('error', 'Dokumen tidak ditemukan');
+        }
     }
+
 }

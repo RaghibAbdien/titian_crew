@@ -28,3 +28,4 @@ Route::get('/crew', [CrewController::class, 'show'])->name('crew')->middleware('
 Route::post('/crew', [CrewController::class, 'store'])->middleware('auth')->name('tambah-crew');
 Route::put('/crew/{id}', [CrewController::class, 'updateCrew'])->middleware('auth')->name('update-crew');
 Route::post('/update-notif', [CrewController::class, 'UpdateNotif'])->middleware('auth');
+Route::delete('/crew/hapus-sertif/{id}', [CrewController::class, 'hapusSertif'])->middleware('auth')->name('hapus-sertif');
