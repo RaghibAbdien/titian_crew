@@ -8,8 +8,7 @@
         <!-- DataTables -->
         <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css">
 
-        <!-- Sweet Alert 2 -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
         <!-- Responsive datatable examples -->
         <link href="assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet" type="text/css">
@@ -695,7 +694,7 @@
 
         // Validation error Tambah Crew
         document.addEventListener('DOMContentLoaded', function () {
-            // Reset form and clear error messages when modal is closed
+            // Reset form dan hapus pesan error saat modal ditutup
             var modalElement = document.getElementById('myModal');
             var formElement = document.getElementById('crewForm');
             var errorElements = document.querySelectorAll('.text-danger');
@@ -708,13 +707,13 @@
                 formElement.querySelectorAll('.form-select').forEach(function(select) {
                     select.selectedIndex = 0;
                 });
-                // Clear error messages
+                // Hapus error messages
                 errorElements.forEach(function(error) {
                     error.textContent = '';
                 });
             });
 
-            // Show error messages when modal is opened only for store operation
+            // Tampilkan modal saat ada error validasi
             @if ($errors->any() && !$isEdit)  
             var myModal = new bootstrap.Modal(document.getElementById('myModal'));
             myModal.show();
@@ -723,6 +722,7 @@
                 var myUpdate = document.querySelector('.update-modal');
                 var errorUpdate = document.querySelectorAll('.update');
                 myModal.show();
+                // Hapus error messages
                 myUpdate.addEventListener('hidden.bs.modal', function (event) {
                     errorUpdate.forEach(function(error) {
                     error.textContent = '';

@@ -36,6 +36,15 @@
 
         </div>
         <!-- END layout-wrapper -->
+        @if(session('session_expired'))
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sesi Habis',
+                text: '{{ session('session_expired') }}'
+            });
+        </script>
+    @endif
 
          <!-- Modal Notif Content -->
         @foreach ($notifs as $notif )
@@ -85,6 +94,7 @@
         @stack('js')
 
         <script>
+            // Update Notification
             $(document).ready(function() {
                 $('div[id^="myNotif"]').on('shown.bs.modal', function (e) {
                     var modalId = $(this).attr('id');
