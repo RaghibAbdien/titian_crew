@@ -43,10 +43,21 @@
                                 <li class="breadcrumb-item active">Welcome to Management Crew</li>
                             </ol>
                         </div>
-                        <div class="col-md-4">
+                        {{-- <div class="col-md-4">
                             <div class="float-end d-none d-md-block">
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">Tambah Crew</button>
+                                </div>
+                            </div>
+                        </div> --}}
+                    </div>
+                    <div class="row align-items-center mb-0">
+                        <div class="col-md-12">
+                            <div class="float-end d-md-block">
+                                <div class="my-2 text-center">
+                                    <button class="btn btn-primary waves-effect waves-light mx-2" type="button" aria-expanded="false" data-bs-toggle="modal" data-bs-target="#myModal">
+                                        <i class="fa-solid fa-plus me-2"></i> Tambah Crew
+                                    </button>
                                 </div>
                             </div>
                         </div>

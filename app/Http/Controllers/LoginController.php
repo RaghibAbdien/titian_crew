@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -35,8 +38,23 @@ class LoginController extends Controller
 
     public function logout(){
 
-        Auth::logout();
-        return redirect('/');
+        try {
+            Log::info("User sedang mencoba untuk log out", ['user_id' => Auth::id()]);
+            
+            Auth::logout();
+            
+            Log::info("User berhasil melakukan log out");
+            return redirect('/');
+        } catch (Exception $e) {
+            Log::info("Ada kesalahan saat melakukan log out", [
+                'user_id' => Auth::id(),
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return with('error', "Ada error saat melakukan log out, Silahkan coba lagi");
+
+
+        }
         
     }
 }

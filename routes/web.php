@@ -21,7 +21,6 @@ use Illuminate\Routing\RouteGroup;
 Route::group(['middleware' => ['guest']], function (){
     Route::get('/', [LoginController::class, 'show']);
     Route::post('/', [LoginController::class, 'login'])->name('login');
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
 
@@ -33,4 +32,5 @@ Route::group(['middleware' => ['auth', 'session.expired']], function (){
     Route::put('/crew/{id}', [CrewController::class, 'updateCrew'])->name('update-crew');
     Route::post('/update-notif', [CrewController::class, 'UpdateNotif']);
     Route::delete('/crew/hapus-sertif/{id}', [CrewController::class, 'hapusSertif'])->name('hapus-sertif');
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
