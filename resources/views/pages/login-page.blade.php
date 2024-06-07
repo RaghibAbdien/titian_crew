@@ -22,7 +22,7 @@
       </div>
       <form action="/" method="POST" class="log-in" autocomplete="off">
         @csrf
-        <h4>We are <span>NUVA</span></h4>
+        <h4>Welcome to <span>TITIAN Crew Manage</span></h4>
         <p>Welcome back! Log in to your account to view today's clients:</p>
         <div class="floating-label">
           <input placeholder="Email" type="email" name="email" id="email" autocomplete="on" required>

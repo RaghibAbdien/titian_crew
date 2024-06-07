@@ -36,7 +36,7 @@ form {
   flex-direction: column;
   align-items: flex-start;
   padding-bottom: 20px;
-  width: 300px;
+  width: 380px;
 }
 form h4 {
   margin-bottom: 20px;
@@ -269,7 +269,7 @@ input:focus {
   margin: 20px;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575.98px) and (max-width: 932px){
 
     form{
         width: 280px;
@@ -277,6 +277,12 @@ input:focus {
 
    .left{
     display: none;
+   }
+
+   .session{
+    height: 60%;
+    align-items: center;
+    justify-content: center;
    }
 }
 
@@ -290,7 +296,7 @@ input:focus {
 @media (min-width: 768px) and (max-width: 991.98px) {
   
     .left{
-        width: 340px;
+        width: 300px;
     }
 
     form{
