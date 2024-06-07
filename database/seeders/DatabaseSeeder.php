@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             LokasiSeeder::class,
             BankSeeder::class,
+            ProyekSeeder::class,
         ]);
     }
 }

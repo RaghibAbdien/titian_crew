@@ -58,7 +58,7 @@
                                     <i class="fa-solid fa-helmet-safety fa-2x"></i>
                                 </div>
                                 <h5 class="font-size-16 text-uppercase text-white-50">Proyek</h5>
-                                <h4 class="fw-medium font-size-24">15</h4>
+                                <h4 class="fw-medium font-size-24">{{ $jmlhProyek }}</h4>
                             </div>
                         </div>
                     </div>

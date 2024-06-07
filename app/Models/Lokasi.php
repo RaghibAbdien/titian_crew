@@ -16,4 +16,9 @@ class Lokasi extends Model
     {
         return $this->hasMany(Crew::class, 'lokasi_crew_id');
     }
+
+    public function proyek()
+    {
+        return $this->hasOne(Proyek::class, 'lokasi_proyek_id');
+    }
 }
