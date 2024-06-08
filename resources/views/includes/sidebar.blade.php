@@ -10,13 +10,19 @@
 
                 <li>
                     <a href="{{ route('dashboard') }}" class="waves-effect">
-                        <i class="ti-home"></i>
+                        <i class="fa-solid fa-house"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('project') }}" class="waves-effect">
+                        <i class="fa-solid fa-helmet-safety"></i>
+                        <span>Project</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('crew') }}" class="waves-effect">
-                        <i class="ti-user"></i>
+                        <i class="fa-solid fa-user-gear"></i>
                         <span>Crew</span>
                     </a>
                 </li>
