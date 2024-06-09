@@ -11,6 +11,11 @@ class Proyek extends Model
 
     protected $guarded = ['id'];
 
+    public function crew()
+    {
+        return $this->hasMany(Crew::class, 'proyek_crew_id');
+    }
+
     public function lokasi()
     {
         return $this->belongsTo(Lokasi::class, 'lokasi_proyek_id');

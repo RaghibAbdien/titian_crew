@@ -31,4 +31,9 @@ class Crew extends Model
         return $this->hasOne(Dokumen::class, 'id_crew', 'id_crew');
     }
 
+    public function proyeks()
+    {
+        return $this->belongsTo(Proyek::class, 'proyek_crew_id');
+    }
+
 }

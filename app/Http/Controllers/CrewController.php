@@ -6,6 +6,7 @@ use DateTime;
 use App\Models\Bank;
 use App\Models\Crew;
 use App\Models\Lokasi;
+use App\Models\Proyek;
 use App\Models\Dokumen;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class CrewController extends Controller
     public function show()
     {
         $lokasis = Lokasi::all();
+        $projects = Proyek::all();
         $banks = Bank::all();
         $crews = Crew::all();
         $docs = Dokumen::join('crews', 'dokumens.id_crew', '=', 'crews.id_crew')
@@ -59,7 +61,7 @@ class CrewController extends Controller
         ->get();
         $isEdit = true;
 
-        return view('pages.crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates', 'isEdit') );
+        return view('pages.crew', compact('crews', 'docs', 'notifs', 'NotifNotReadNum', 'lokasis', 'banks', 'updates', 'isEdit', 'projects') );
     }
 
 
@@ -79,6 +81,7 @@ class CrewController extends Controller
             'email_crew' => 'required|email|max:50|unique:crews',
             'nohp_crew' => 'required|string|min:12|max:13|unique:crews|regex:/^\d+$/',
             'lokasi_crew_id' => 'required|exists:lokasi,id',
+            'project_crew_id' => 'required|exists:proyeks,id',
             'id_bank' => 'required|exists:bank,id',
             'cv_path' => 'required|mimes:pdf|max:2048',
             'ktp_path' => 'required|mimes:pdf|max:2048',
@@ -194,6 +197,7 @@ class CrewController extends Controller
             'email_crew' => $request->input('email_crew'),
             'nohp_crew' => $request->input('nohp_crew'),
             'lokasi_crew_id' => $request->input('lokasi_crew_id'),
+            'proyek_crew_id' => $request->input('project_crew_id'),
             'id_bank' => $request->input('id_bank'),
             'no_rekening' => $request->input('no_rekening'),
         ]);
@@ -287,6 +291,7 @@ class CrewController extends Controller
                     'regex:/^\d+$/'
                 ],
                 'lokasi_crew_id' => 'required|exists:lokasi,id',
+                'project_crew_id' => 'required|exists:proyeks,id',
                 'status_crew' => 'required|',
                 'id_bank' => 'required|exists:bank,id',
                 'no_rekening' => [
@@ -454,6 +459,7 @@ class CrewController extends Controller
                 'email_crew' => $request->input('email_crew'),
                 'nohp_crew' => $request->input('nohp_crew'),
                 'lokasi_crew_id' => $request->input('lokasi_crew_id'),
+                'proyek_crew_id' => $request->input('project_crew_id'),
                 'status_crew' => $request->input('status_crew'),
                 'id_bank' => $request->input('id_bank'),
                 'no_rekening' => $request->input('no_rekening'),

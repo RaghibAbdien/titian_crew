@@ -43,13 +43,6 @@
                                 <li class="breadcrumb-item active">Welcome to Management Crew</li>
                             </ol>
                         </div>
-                        {{-- <div class="col-md-4">
-                            <div class="float-end d-none d-md-block">
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#myModal">Tambah Crew</button>
-                                </div>
-                            </div>
-                        </div> --}}
                     </div>
                     <div class="row align-items-center mb-0">
                         <div class="col-md-12">
@@ -183,6 +176,17 @@
                                         <label for="nohp_crew" class="form-label">No. HP</label>
                                         <input type="text" class="form-control" id="nohp_crew" name="nohp_crew" autocomplete="nohp_crew" required value="{{ old('nohp_crew') }}">
                                         @error('nohp_crew')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="card pb-1">
+                                        <label for="project_crew" class="form-label">Project</label>
+                                        <select class="form-select" aria-label="Default select example" id="project_crew" name="project_crew_id" required>
+                                            @foreach($projects as $project)
+                                                <option value="{{ $project->id }}" {{ old('project_crew_id') == $project->id ? 'selected' : '' }}>{{ $project->nama_proyek }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('project_crew_id')
                                             <div class="text-danger">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -390,6 +394,17 @@
                                         <input type="text" class="form-control" id="nohp_crew" name="nohp_crew" autocomplete="nohp_crew" required value="{{ $update->nohp_crew }}">
                                         @error('nohp_crew')
                                             <div class="text-danger update">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="card pb-3">
+                                        <label for="project_crew" class="form-label">Project</label>
+                                        <select class="form-select" aria-label="Default select example" id="project_crew" name="project_crew_id" required>
+                                            @foreach($projects as $project)
+                                                <option value="{{ $project->id }}" {{ $update->project_crew_id == $project->id ? 'selected' : '' }}>{{ $project->nama_proyek }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('project_crew_id')
+                                            <div class="text-danger">{{ $message }}</div>
                                         @enderror
                                     </div>
                                     <div class="card pb-3">

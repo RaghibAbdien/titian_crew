@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Crew;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -11,7 +12,8 @@ class ProjectController extends Controller
      */
     public function show()
     {
-        return view('pages.project');
+        $crews = Crew::all();
+        return view('pages.project', compact('crews'));
     }
 
     /**
