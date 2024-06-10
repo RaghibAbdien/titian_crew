@@ -22,8 +22,8 @@
       </div>
       <form action="/" method="POST" class="log-in" autocomplete="off">
         @csrf
-        <h4>Welcome to <span>TITIAN Crew Manage</span></h4>
-        <p>Welcome back! Log in to your account to view today's clients:</p>
+        <h4>Welcome to <br> <span>TITIAN Crew Management</span></h4>
+
         <div class="floating-label">
           <input placeholder="Email" type="email" name="email" id="email" autocomplete="on" required>
           <label for="email">Email:</label>
