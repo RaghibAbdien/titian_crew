@@ -716,7 +716,7 @@
 
         <script>
             $(document).ready(function() {
-                $('form').on('submit', function(event) {
+                $('form:not(#formToExclude)').on('submit', function(event) {
                     event.preventDefault();
                     var form = $(this)[0]; // Mendapatkan elemen form asli
                     var formData = new FormData(form);

@@ -94,7 +94,7 @@
                 <!-- item-->
                 <span class="dropdown-item"><i class="mdi mdi-account-circle font-size-17 align-middle me-1"></i>Halo, {{ auth()->user()->nama }}</span>
                 <div class="dropdown-divider"></div>
-                <form action="/logout" method="post">
+                <form id="formToExclude" action="/logout" method="post">
                     @csrf
                     <button type="submit" class="dropdown-item text-danger"><i class="bx bx-power-off font-size-17 align-middle me-1 text-danger"></i> Logout</button>
                 </form>
