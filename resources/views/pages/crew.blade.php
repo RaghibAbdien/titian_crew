@@ -331,7 +331,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary waves-effect waves-light">Submit</button>
+                                <button type="submit" id="submitBtn" class="btn btn-primary waves-effect waves-light">Submit</button>
                             </div>
                         </form>
                     </div>
@@ -554,7 +554,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary waves-effect waves-light">Submit</button>
+                                <button type="submit" id="submitBtn" class="btn btn-primary waves-effect waves-light">Submit</button>
                             </div>
                         </form>
                     </div>
@@ -714,92 +714,66 @@
     <!-- Script -->
     <script src="assets/js/script.js"></script>
 
-    <script>
+        <script>
+            $(document).ready(function() {
+                $('form').on('submit', function(event) {
+                    event.preventDefault();
+                    var form = $(this)[0]; // Mendapatkan elemen form asli
+                    var formData = new FormData(form);
+                    var submitButton = $('#submitBtn');
 
-        // Validation error Tambah Crew
-        document.addEventListener('DOMContentLoaded', function () {
-            // Reset form dan hapus pesan error saat modal ditutup
-            var modalElement = document.getElementById('myModal');
-            var formElement = document.getElementById('crewForm');
-            var errorElements = document.querySelectorAll('.text-danger');
-            
-            modalElement.addEventListener('hidden.bs.modal', function (event) {
-                formElement.reset();
-                formElement.querySelectorAll('.form-control').forEach(function(input) {
-                    input.value = '';
-                });
-                formElement.querySelectorAll('.form-select').forEach(function(select) {
-                    select.selectedIndex = 0;
-                });
-                // Hapus error messages
-                errorElements.forEach(function(error) {
-                    error.textContent = '';
-                });
-            });
+                    // Menonaktifkan tombol submit untuk mencegah double click
+                    submitButton.prop('disabled', true);
 
-            // Tampilkan modal saat ada error validasi
-            @if ($errors->any() && !$isEdit)  
-            var myModal = new bootstrap.Modal(document.getElementById('myModal'));
-            myModal.show();
-            @elseif ($errors->any() && $isEdit)
-                var myModal = new bootstrap.Modal(document.querySelector('.update-modal'));
-                var myUpdate = document.querySelector('.update-modal');
-                var errorUpdate = document.querySelectorAll('.update');
-                myModal.show();
-                // Hapus error messages
-                myUpdate.addEventListener('hidden.bs.modal', function (event) {
-                    errorUpdate.forEach(function(error) {
-                    error.textContent = '';
-                    });
-                });
-            @endif
+                    $.ajax({
+                        url: $(form).attr('action'),
+                        method: $(form).attr('method'),
+                        data: formData,
+                        processData: false, // Tidak memproses data (khusus untuk FormData)
+                        contentType: false, // Tidak menetapkan tipe konten (khusus untuk FormData)
+                        success: function(response) {
+                            // Tampilkan SweetAlert untuk pesan sukses
+                            Swal.fire({
+                                position: "center",
+                                icon: "success",
+                                title: "Berhasil",
+                                showConfirmButton: false,
+                                timer: 1750
+                            }).then(function() {
+                                // Redirect setelah SweetAlert ditutup
+                                window.location.href = '{{ route('crew') }}';
+                            });
+                        },
+                        error: function(xhr) {
+                            // Jika validasi gagal, tampilkan pesan kesalahan menggunakan SweetAlert
+                            var errors = xhr.responseJSON.errors;
+                            var errorMessage = '';
 
-        });
+                            $.each(errors, function(index, value) {
+                                errorMessage += value + '<br>';
+                            });
 
-        // Hapus Sertifikat
-        $(document).ready(function () {
-                $('.delete-certificate').click(function () {
-                    var index = $(this).data('index');
-                    var id = $(this).data('id');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                html: errorMessage
+                            });
 
-                    Swal.fire({
-                        title: 'Apakah Anda yakin?',
-                        text: "Sertifikat ini akan dihapus secara permanen!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Ya, hapus!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $('#certificate-index').val(index);
-                            $('#delete-certificate-form').attr('action', '/crew/hapus-sertif/' + id);
-                            $('#delete-certificate-form').submit();
+                            // Aktifkan kembali tombol submit jika terjadi kesalahan
+                            submitButton.prop('disabled', false);
                         }
                     });
                 });
             });
 
-    </script>
-
-        @if(session('error'))
-        <script>
-            // Tampilkan SweetAlert2 dengan pesan error
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: '{{ session('error') }}'
-            });
         </script>
-        @endif
 
-        @if (session('success'))
+        @if (session('error'))
         <script>
             Swal.fire({
                 position: "center",
-                icon: "success",
-                title: "{{ session('success') }}",
+                icon: "error",
+                title: "{{ session('error') }}",
                 showConfirmButton: false,
                 timer: 1750
             });

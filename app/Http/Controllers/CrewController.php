@@ -228,7 +228,7 @@ class CrewController extends Controller
     } catch (ValidationException $e) {
         DB::rollBack();
         // Jika terjadi kesalahan validasi, kembali ke halaman sebelumnya dengan pesan kesalahan
-        return redirect()->back()->withErrors($e->validator)->withInput();
+        return response()->json(['errors' => $e->validator->errors()->all()], 422);
     } catch (\Exception $e) {
         // Jika terjadi kesalahan lain, kembali ke halaman sebelumnya dengan pesan kesalahan umum
         DB::rollBack();
@@ -497,7 +497,7 @@ class CrewController extends Controller
         } catch (ValidationException $e) {
             DB::rollBack();
             // Jika terjadi kesalahan validasi, kembali ke halaman sebelumnya dengan pesan kesalahan
-            return redirect()->back()->withErrors($e->validator)->withInput();
+            return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Exception $e) {
             // Jika terjadi kesalahan lain, kembali ke halaman sebelumnya dengan pesan kesalahan umum
             DB::rollBack();

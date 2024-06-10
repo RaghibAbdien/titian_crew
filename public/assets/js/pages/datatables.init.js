@@ -8,3 +8,12 @@ $(document).ready(function(){
     
     $(".dataTables_length select").addClass("form-select form-select-sm");
 });
+
+$(document).ready(function(){
+    $("#datatable2").DataTable({
+        lengthChange: false, // Menonaktifkan pilihan untuk mengubah jumlah tampilan data per halaman
+        buttons: [] // Tidak menambahkan button apapun
+    });
+    
+    $(".dataTables_length select").addClass("form-select form-select-sm");
+});

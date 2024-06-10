@@ -10,6 +10,7 @@ class Lokasi extends Model
     use HasFactory;
 
     protected $table = 'lokasi';
+    protected $guarded = ['id'];
 
     // Relasi dengan model Crew
     public function crews()

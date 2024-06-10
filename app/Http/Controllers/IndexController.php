@@ -6,6 +6,8 @@ use App\Models\Crew;
 use App\Models\Lokasi;
 use App\Models\Proyek;
 use Illuminate\Routing\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 
 class IndexController extends Controller
@@ -18,7 +20,30 @@ class IndexController extends Controller
         $jmlhCrew = Crew::all()->where('status_crew', true)->count();
         $jmlhLokasi = Lokasi::all()->count();
         $jmlhProyek = Proyek::all()->count();
-        return view('pages.index', compact('jmlhCrew','jmlhLokasi', 'jmlhProyek'));
+        $projects = Proyek::all();
+        $lokasis = Lokasi::all();
+        return view('pages.index', compact('jmlhCrew','jmlhLokasi', 'jmlhProyek', 'projects', 'lokasis'));
     }
+
+    public function tambahLokasi(Request $request)
+{
+    try {
+        $request->validate([
+            'nama_lokasi' => 'required|unique:lokasi',
+        ]);
+
+        Lokasi::create([
+            'nama_lokasi' => $request->input('nama_lokasi'),
+        ]);
+
+        return redirect()->back()->with('success', 'Data berhasil ditambahkan');
+    } catch (ValidationException $e) {
+        // Jika validasi gagal, kirim respon JSON ke client
+        return response()->json(['errors' => $e->validator->errors()->all()], 422);
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage())->withInput();
+    }
+}
+
 
 }
