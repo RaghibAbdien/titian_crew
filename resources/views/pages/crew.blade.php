@@ -73,7 +73,6 @@
                                         <th>Alamat</th>
                                         <th>Email</th>
                                         <th>No.HP</th>
-                                        <th>Lokasi</th>
                                         <th>Status</th>
                                         <th>Aksi</th>
                                         
@@ -90,7 +89,6 @@
                                             <td>{{ $crew->alamat_crew }}</td>
                                             <td>{{ $crew->email_crew }}</td>
                                             <td>{{ $crew->nohp_crew }}</td>
-                                            <td>{{ $crew->lokasi->nama_lokasi }}</td>
                                             <td>
                                                 <div class="
                                                 @if ($crew->status_crew === 1)

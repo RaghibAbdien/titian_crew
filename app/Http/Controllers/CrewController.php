@@ -79,7 +79,7 @@ class CrewController extends Controller
             'nama_crew' => 'required|string|max:50|regex:/^[a-zA-Z\s]+$/',
             'alamat_crew' => 'required|string',
             'email_crew' => 'required|email|max:50|unique:crews',
-            'nohp_crew' => 'required|string|min:12|max:13|unique:crews|regex:/^\d+$/',
+            'nohp_crew' => 'required|string|unique:crews|regex:/^\d+$/',
             'lokasi_crew_id' => 'required|exists:lokasi,id',
             'project_crew_id' => 'required|exists:proyeks,id',
             'id_bank' => 'required|exists:bank,id',
@@ -92,7 +92,7 @@ class CrewController extends Controller
             'fotocrew_path' => 'required|mimes:jpeg,jpg,png',
             'npwp_path' => 'required|mimes:pdf|max:2048',
             'skck_path' => 'required|mimes:pdf|max:2048',
-            'no_rekening' => 'required|min:10|max:16|unique:crews|regex:/^\d+$/',
+            'no_rekening' => 'required|min:5|unique:crews|regex:/^\d+$/',
             'mcu_path.*' => 'required|mimes:pdf|',
             'tgl_mcu' => 'required|date',
             'expired_mcu' => 'required|date|after_or_equal:tgl_mcu',
@@ -285,8 +285,6 @@ class CrewController extends Controller
                 'nohp_crew' => [
                     'required',
                     'string',
-                    'min:12',
-                    'max:13',
                     Rule::unique('crews', 'nohp_crew')->ignore($crew, 'id_crew'),
                     'regex:/^\d+$/'
                 ],
@@ -296,8 +294,7 @@ class CrewController extends Controller
                 'id_bank' => 'required|exists:bank,id',
                 'no_rekening' => [
                     'required',
-                    'min:10',
-                    'max:16',
+                    'min:5',
                     Rule::unique('crews', 'no_rekening')->ignore($crew, 'id_crew'),
                     'regex:/^\d+$/'
                 ],
