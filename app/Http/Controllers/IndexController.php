@@ -45,5 +45,27 @@ class IndexController extends Controller
     }
 }
 
+    public function tambahProject(Request $request)
+{
+    try {
+        $request->validate([
+            'nama_proyek' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'lokasi_proyek_id' => 'required|exists:lokasi,id',
+        ]);
+
+        Proyek::create([
+            'nama_proyek' => $request->input('nama_proyek'),
+            'lokasi_proyek_id' => $request->input('lokasi_proyek_id'),
+        ]);
+
+        return redirect()->back()->with('success', 'Data berhasil ditambahkan');
+    } catch (ValidationException $e) {
+        // Jika validasi gagal, kirim respon JSON ke client
+        return response()->json(['errors' => $e->validator->errors()->all()], 422);
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', $e->getMessage())->withInput();
+    }
+}
+
 
 }

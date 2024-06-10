@@ -90,6 +90,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <button class="btn btn-primary waves-effect waves-light mx-2" type="button" aria-expanded="false" data-bs-toggle="modal" data-bs-target="#AddProject">
+                    <i class="fa-solid fa-plus me-2"></i> Tambah Project
+                </button>
                 <table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
 
                     <thead>
@@ -193,6 +196,42 @@
     </div>
     <!-- /.modal-dialog -->
 </div>
+<!-- Modal Tambah Project -->
+<div id="AddProject" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="projectForm" action="{{ route('tambah-project') }}" method="post">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="myModalLabel">Tambah Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="col">
+                        <div class="card pb-3">
+                            <label for="nama_proyek" class="form-label">Nama Project</label>
+                            <input type="text" name="nama_proyek" id="nama_proyek">
+                        </div>
+                        <div class="card pb-3">
+                            <label for="lokasi_crew" class="form-label">Lokasi</label>
+                            <select class="form-select" aria-label="Default select example" id="lokasi_crew" name="lokasi_proyek_id" required>
+                                @foreach($lokasis as $lokasi)
+                                    <option value="{{ $lokasi->id }}" {{ old('lokasi_proyek_id') == $lokasi->id ? 'selected' : '' }}>{{ $lokasi->nama_lokasi }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary waves-effect" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary waves-effect waves-light">Submit</button>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
 
 @push('js')
     <!-- Required datatable js -->
@@ -205,6 +244,18 @@
     
     <!-- Datatable init js -->
     <script src="assets/js/pages/datatables.init.js"></script>
+
+        @if (session('error'))
+        <script>
+            Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "{{ session('error') }}",
+                showConfirmButton: true,
+            });
+        </script>
+        @endif
+
 
         <script>
             $(document).ready(function() {

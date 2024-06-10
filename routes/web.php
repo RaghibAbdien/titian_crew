@@ -35,5 +35,6 @@ Route::group(['middleware' => ['auth', 'session.expired']], function (){
     Route::post('/update-notif', [CrewController::class, 'UpdateNotif']);
     Route::delete('/crew/hapus-sertif/{id}', [CrewController::class, 'hapusSertif'])->name('hapus-sertif');
     Route::post('/dashboard/lokasi', [IndexController::class, 'tambahLokasi'])->name('tambah-lokasi');
+    Route::post('/dashboard/project', [IndexController::class, 'tambahProject'])->name('tambah-project');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
