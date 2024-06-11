@@ -262,6 +262,8 @@
                 $('form:not(#formToExclude)').on('submit', function(event) {
                     event.preventDefault();
                     var form = $(this);
+                    // Menonaktifkan tombol submit 
+                    form.find('button[type="submit"]').prop('disabled', true);
                     
                     $.ajax({
                         url: form.attr('action'),
@@ -292,7 +294,10 @@
                                 title: 'Oops...',
                                 html: errorMessage
                             });
-                        }
+
+                            // Mengaktifkan kembali tombol submit 
+                            form.find('button[type="submit"]').prop('disabled', false);
+                            }
                     });
                 });
             });

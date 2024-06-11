@@ -35,7 +35,7 @@
                 <span class="badge bg-danger rounded-pill">{{ $NotifNotReadNum }}</span>
                 @endif
             </button>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0 pb-3" aria-labelledby="page-header-notifications-dropdown">
                 <div class="p-3">
                     <div class="row align-items-center">
                         <div class="col">
@@ -73,13 +73,6 @@
                             <p class="mx-auto">Tidak ada pemberitahuan saat ini</p>
                         </div>
                     @endforelse 
-                </div>
-                <div class="p-2 border-top">
-                    <div class="d-grid">
-                        <a class="btn btn-sm btn-link font-size-14 text-center" href="javascript:void(0)">
-                            View all
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>

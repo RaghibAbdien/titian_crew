@@ -576,7 +576,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="card mb-3">
-                                    <img src="{{ Storage::url($doc->fotocrew_path) }}" class="card-img-top" alt="...">
+                                    <img src="{{ Storage::url($doc->fotocrew_path) }}" class="card-img-top" alt="{{ $doc->fotocrew_path }}">
                                     <div class="card-body">
                                       <h5 class="card-title">Dokumen Crew</h5>
                                       <ul class="card-text">
@@ -714,61 +714,7 @@
     <!-- Script -->
     <script src="assets/js/script.js"></script>
 
-        <script>
-            $(document).ready(function() {
-                $('form:not(#formToExclude)').on('submit', function(event) {
-                    event.preventDefault();
-                    var form = $(this)[0]; // Mendapatkan elemen form asli
-                    var formData = new FormData(form);
-                    var submitButton = $('#submitBtn');
-
-                    // Menonaktifkan tombol submit untuk mencegah double click
-                    submitButton.prop('disabled', true);
-
-                    $.ajax({
-                        url: $(form).attr('action'),
-                        method: $(form).attr('method'),
-                        data: formData,
-                        processData: false, // Tidak memproses data (khusus untuk FormData)
-                        contentType: false, // Tidak menetapkan tipe konten (khusus untuk FormData)
-                        success: function(response) {
-                            // Tampilkan SweetAlert untuk pesan sukses
-                            Swal.fire({
-                                position: "center",
-                                icon: "success",
-                                title: "Berhasil",
-                                showConfirmButton: false,
-                                timer: 1750
-                            }).then(function() {
-                                // Redirect setelah SweetAlert ditutup
-                                window.location.href = '{{ route('crew') }}';
-                            });
-                        },
-                        error: function(xhr) {
-                            // Jika validasi gagal, tampilkan pesan kesalahan menggunakan SweetAlert
-                            var errors = xhr.responseJSON.errors;
-                            var errorMessage = '';
-
-                            $.each(errors, function(index, value) {
-                                errorMessage += value + '<br>';
-                            });
-
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                html: errorMessage
-                            });
-
-                            // Aktifkan kembali tombol submit jika terjadi kesalahan
-                            submitButton.prop('disabled', false);
-                        }
-                    });
-                });
-            });
-
-        </script>
-
-        @if (session('error'))
+    @if (session('error'))
         <script>
             Swal.fire({
                 position: "center",
@@ -778,7 +724,96 @@
                 timer: 1750
             });
         </script>
-        @endif
+    @endif        
+
+    <script>
+        $(document).ready(function() {
+            $('form:not(#formToExclude)').on('submit', function(event) {
+                event.preventDefault();
+                var form = $(this);
+        
+                // Menonaktifkan tombol submit
+                form.find('button[type="submit"]').prop('disabled', true);
+        
+                // Membuat objek FormData
+                var formData = new FormData(form[0]);
+        
+                $.ajax({
+                    url: form.attr('action'),
+                    method: form.attr('method'),
+                    data: formData,
+                    contentType: false, // Tidak mengatur tipe konten
+                    processData: false, // Tidak memproses data
+                    success: function(response) {
+                        // Jika validasi berhasil, redirect atau lakukan tindakan lain
+                        window.location.href = '{{ route('crew') }}';
+                        Swal.fire({
+                            position: "center",
+                            icon: "success",
+                            title: "Berhasil",
+                            showConfirmButton: false,
+                            timer: 1750
+                        });
+                    },
+                    error: function(xhr) {
+                        // Jika validasi gagal, tampilkan pesan kesalahan menggunakan SweetAlert
+                        var errors = xhr.responseJSON.errors;
+                        var errorMessage = '';
+        
+                        $.each(errors, function(index, value) {
+                            errorMessage += value + '<br>';
+                        });
+        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            html: errorMessage
+                        });
+        
+                        // Mengaktifkan kembali tombol submit 
+                        form.find('button[type="submit"]').prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+        
+
+    <script>
+        $(document).ready(function() {
+            $('.delete-certificate').on('click', function() {
+                var index = $(this).data('index');
+                var docId = $(this).data('id');
+                
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Anda tidak akan bisa mengembalikan ini!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#certificate-index').val(index);
+                        $('#certificate-doc-id').val(docId);
+                        $('#delete-certificate-form').submit();
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+        // Ketika modal ditutup, reset form
+        $('#myModal').on('hidden.bs.modal', function () {
+            $('#crewForm')[0].reset();
+        });
+    });
+    </script>
+
     @endpush            
 
 @endsection
